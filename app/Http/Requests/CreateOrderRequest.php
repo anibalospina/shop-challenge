@@ -29,4 +29,13 @@ class CreateOrderRequest extends FormRequest
             'customerMobile' => 'required|max:40'
         ];
     }
+
+    public function attributes()
+    {
+        return [
+            'customerName' => 'Nombre',
+            'customerEmail' => 'Correo electrónico',
+            'customerMobile' => 'Celular'
+        ];
+    }
 }
