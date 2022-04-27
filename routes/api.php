@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('v1')->group(function () {
+    Route::prefix('orders')->group(function () {
+        Route::post('/', [OrderController::class, 'create']);
+        Route::get('/{id}', [OrderController::class, 'getById']);
+        Route::get('/', [OrderController::class, 'getAll']);
+    });
 });

@@ -1,0 +1,20 @@
+### Create order
+POST http://localhost/api/v1/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+    "customerName": "Anibal Ospina",
+    "customerEmail": "anibalospinadev@gmail.com",
+    "customerMobile": "573174455133"
+}
+
+### Get order by id
+GET http://localhost/api/v1/orders/1
+Content-Type: application/json
+Accept: application/json
+
+### Get orders
+GET http://localhost/api/v1/orders
+Content-Type: application/json
+Accept: application/json
