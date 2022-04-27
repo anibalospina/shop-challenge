@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
+
+    protected $hidden = ['id', 'created_at', 'updated_at'];
 }
