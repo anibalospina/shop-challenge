@@ -3,27 +3,27 @@
 namespace App\Services;
 
 use App\Entities\Order\OrderRequestEntity;
-use App\Entities\Payment\PaymentAmountEntity;
-use App\Entities\Payment\PaymentAuthEntity;
-use App\Entities\Payment\PaymentEntity;
-use App\Entities\Payment\PaymentPayerEntity;
-use App\Entities\Payment\PaymentRequestEntity;
 use App\Entities\Payment\PaymentResponseEntity;
 use App\Repositories\Contracts\IOrderRepository;
 use App\Services\Contracts\IOrderService;
+use App\Services\Contracts\IPaymentRequestService;
 use App\Services\Contracts\IPaymentService;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 class OrderService implements IOrderService
 {
     private IOrderRepository $orderRepository;
     private IPaymentService $paymentService;
+    private IPaymentRequestService $paymentRequestService;
 
-    public function __construct(IOrderRepository $orderRepository, IPaymentService $paymentService)
+    public function __construct(
+        IOrderRepository       $orderRepository,
+        IPaymentService        $paymentService,
+        IPaymentRequestService $paymentRequestService
+    )
     {
         $this->orderRepository = $orderRepository;
         $this->paymentService = $paymentService;
+        $this->paymentRequestService = $paymentRequestService;
     }
 
     public function create(OrderRequestEntity $orderRequestEntity): PaymentResponseEntity
@@ -35,9 +35,19 @@ class OrderService implements IOrderService
             $orderRequestEntity->status
         );
 
-        return $this->paymentService->createRequest(
+        $paymentRequest = $this->paymentService->createRequest(
             $this->paymentService->buildPaymentRequest($orderId, $orderRequestEntity)
         );
+
+        $this->paymentRequestService->create(
+            $orderId,
+            $orderRequestEntity->description,
+            $orderRequestEntity->total,
+            $paymentRequest->requestId,
+            $paymentRequest->processUrl
+        );
+
+        return $paymentRequest;
     }
 
     public function getById(int $id): array|null

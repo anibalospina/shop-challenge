@@ -63,7 +63,6 @@ class PaymentService implements IPaymentService
         return null;
     }
 
-
     public function buildPaymentRequest(
         int $orderId, OrderRequestEntity $orderRequestEntity): PaymentRequestEntity|null
     {

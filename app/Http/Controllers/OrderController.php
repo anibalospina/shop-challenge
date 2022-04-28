@@ -3,30 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Entities\Order\OrderRequestEntity;
-use App\Entities\Payment\PaymentAmountEntity;
-use App\Entities\Payment\PaymentAuthEntity;
-use App\Entities\Payment\PaymentEntity;
-use App\Entities\Payment\PaymentPayerEntity;
-use App\Entities\Payment\PaymentRequestEntity;
 use App\Http\Requests\CreateOrderRequest;
 use App\Services\Contracts\IOrderService;
-use App\Services\Contracts\IPaymentService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderController extends Controller
 {
     private IOrderService $orderService;
-    private IPaymentService $paymentService;
 
-    public function __construct(IOrderService $orderService, IPaymentService $paymentService)
+    public function __construct(IOrderService $orderService)
     {
         $this->orderService = $orderService;
-        $this->paymentService = $paymentService;
     }
 
     public function create(CreateOrderRequest $createOrderRequest): JsonResponse
