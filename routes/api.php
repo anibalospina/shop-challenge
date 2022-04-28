@@ -25,4 +25,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/{id}', [OrderController::class, 'getById']);
         Route::get('/', [OrderController::class, 'getAll']);
     });
+
+    Route::get('/test/payment', [OrderController::class, 'testPayment']);
+    Route::get('/test', [OrderController::class, 'test']);
 });

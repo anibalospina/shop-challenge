@@ -9,7 +9,7 @@ class OrderRepository implements IOrderRepository
 {
     public function create(
         string $customerName, string $customerEmail, string $customerMobile, string $status = 'CREATED'
-    ): void
+    ): int
     {
         $order = new Order();
         $order->customer_name = $customerName;
@@ -18,6 +18,8 @@ class OrderRepository implements IOrderRepository
         $order->status = $status;
 
         $order->save();
+
+        return $order->id;
     }
 
     public function getById(int $id): array|null

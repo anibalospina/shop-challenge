@@ -26,7 +26,10 @@ class CreateOrderRequest extends FormRequest
         return [
             'customerName' => 'required|max:80',
             'customerEmail' => 'required|email|max:120',
-            'customerMobile' => 'required|max:40'
+            'customerMobile' => 'required|max:40',
+            'description' => 'required|max:120',
+            'total' => 'required|numeric',
+            'currency' => 'max:10',
         ];
     }
 
@@ -35,7 +38,10 @@ class CreateOrderRequest extends FormRequest
         return [
             'customerName' => 'Nombre',
             'customerEmail' => 'Correo electrónico',
-            'customerMobile' => 'Celular'
+            'customerMobile' => 'Celular',
+            'description' => 'Descripción',
+            'total' => 'Total',
+            'currency' => 'Moneda',
         ];
     }
 }

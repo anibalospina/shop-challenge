@@ -6,7 +6,7 @@ interface IOrderRepository
 {
     public function create(
         string $customerName, string $customerEmail, string $customerMobile, string $status = 'CREATED'
-    ): void;
+    ): int;
 
     public function getById(int $id): array|null;
 

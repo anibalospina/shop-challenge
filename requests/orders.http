@@ -6,7 +6,9 @@ Accept: application/json
 {
     "customerName": "Anibal Ospina",
     "customerEmail": "anibalospinadev@gmail.com",
-    "customerMobile": "573174455133"
+    "customerMobile": "573174455133",
+    "description": "Curso Javascript",
+    "total": 100000
 }
 
 ### Get order by id
