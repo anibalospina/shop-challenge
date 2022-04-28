@@ -44,7 +44,12 @@ class PaymentService implements IPaymentService
         ]);
 
         if (!$response->successful()) {
-            throw new \Exception('No se pudo generar el pago, por favor intente nuevamente.');
+            $errorData = $response->json();
+
+            throw new \Exception(
+                'Error en el pago. ' .
+                $errorData['status']['message'] ?? 'No se pudo generar el pago, por favor intente nuevamente.'
+            );
         }
 
         $responseData = $response->json();
