@@ -14,7 +14,7 @@ class OrderRequestEntity
 
     public function __construct(
         string      $customerName, string $customerEmail, string $customerMobile, string $description, string $total,
-        string|null $currency = 'COP', string|null $status = 'CREATED')
+        string|null $currency = 'USD', string|null $status = 'CREATED')
     {
         $this->customerName = $customerName;
         $this->customerEmail = $customerEmail;

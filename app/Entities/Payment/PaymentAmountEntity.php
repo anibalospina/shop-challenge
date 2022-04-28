@@ -7,7 +7,7 @@ class PaymentAmountEntity
     public float $total;
     public string|null $currency;
 
-    public function __construct(float $total, string|null $currency = 'COP')
+    public function __construct(float $total, string|null $currency = 'USD')
     {
         $this->total = $total;
         $this->currency = $currency;
