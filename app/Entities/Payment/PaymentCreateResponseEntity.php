@@ -2,7 +2,7 @@
 
 namespace App\Entities\Payment;
 
-class PaymentResponseEntity
+class PaymentCreateResponseEntity
 {
     public string $requestId;
     public string $processUrl;

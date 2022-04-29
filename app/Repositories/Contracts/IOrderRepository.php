@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Entities\Order\OrderEntity;
+
 interface IOrderRepository
 {
     public function create(

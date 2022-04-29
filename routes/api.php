@@ -22,10 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::post('/', [OrderController::class, 'create']);
-        Route::get('/{id}', [OrderController::class, 'getById']);
         Route::get('/', [OrderController::class, 'getAll']);
+        Route::get('/payment-request/{paymentRequestId}', [OrderController::class, 'getByPaymentRequestId']);
     });
-
-    Route::get('/test/payment', [OrderController::class, 'testPayment']);
-    Route::get('/test', [OrderController::class, 'test']);
 });

@@ -24,7 +24,7 @@ class OrderRepository implements IOrderRepository
 
     public function getById(int $id): array|null
     {
-        return Order::find($id)->toArray();
+        return Order::findOrFail($id)->toArray();
     }
 
     public function getAll(): array

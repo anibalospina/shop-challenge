@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\Entities\Order\OrderEntity;
 use App\Entities\Order\OrderRequestEntity;
-use App\Entities\Payment\PaymentResponseEntity;
+use App\Entities\Payment\PaymentCreateResponseEntity;
 use App\Repositories\Contracts\IOrderRepository;
 use App\Services\Contracts\IOrderService;
 use App\Services\Contracts\IPaymentRequestService;
@@ -26,7 +27,7 @@ class OrderService implements IOrderService
         $this->paymentRequestService = $paymentRequestService;
     }
 
-    public function create(OrderRequestEntity $orderRequestEntity): PaymentResponseEntity
+    public function create(OrderRequestEntity $orderRequestEntity): PaymentCreateResponseEntity
     {
         $orderId = $this->orderRepository->create(
             $orderRequestEntity->customerName,
@@ -35,14 +36,21 @@ class OrderService implements IOrderService
             $orderRequestEntity->status
         );
 
-        $paymentRequest = $this->paymentService->createRequest(
-            $this->paymentService->buildPaymentRequest($orderId, $orderRequestEntity)
-        );
-
-        $this->paymentRequestService->create(
+        $paymentRequestId = $this->paymentRequestService->create(
             $orderId,
             $orderRequestEntity->description,
             $orderRequestEntity->total,
+            null,
+            null,
+            $orderRequestEntity->currency
+        );
+
+        $paymentRequest = $this->paymentService->createRequest(
+            $this->paymentService->buildPaymentRequest($orderId, $orderRequestEntity, $paymentRequestId)
+        );
+
+        $this->paymentRequestService->updatePaymentInfo(
+            $paymentRequestId,
             $paymentRequest->requestId,
             $paymentRequest->processUrl
         );
@@ -50,9 +58,13 @@ class OrderService implements IOrderService
         return $paymentRequest;
     }
 
-    public function getById(int $id): array|null
+    public function getById(int $id): OrderEntity|null
     {
-        return $this->orderRepository->getById($id);
+        $order = $this->orderRepository->getById($id);
+
+        return new OrderEntity(
+            $order['customer_name'], $order['customer_email'], $order['customer_mobile'], $order['status']
+        );
     }
 
     public function getAll(): array

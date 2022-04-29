@@ -5,24 +5,29 @@ namespace App\Http\Controllers;
 use App\Entities\Order\OrderRequestEntity;
 use App\Http\Requests\CreateOrderRequest;
 use App\Services\Contracts\IOrderService;
+use App\Services\Contracts\IPaymentRequestService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderController extends Controller
 {
     private IOrderService $orderService;
+    private IPaymentRequestService $paymentRequestService;
 
-    public function __construct(IOrderService $orderService)
+    public function __construct(IOrderService $orderService, IPaymentRequestService $paymentRequestService)
     {
         $this->orderService = $orderService;
+        $this->paymentRequestService = $paymentRequestService;
     }
 
     public function create(CreateOrderRequest $createOrderRequest): JsonResponse
     {
-        $orderData = collect($createOrderRequest->all());
+        try {
+            DB::beginTransaction();
 
-        return response()->json(
-            $this->orderService->create(
+            $orderData = collect($createOrderRequest->all());
+            $paymentCreateResponse = $this->orderService->create(
                 new OrderRequestEntity(
                     $orderData->get('customerName'),
                     $orderData->get('customerEmail'),
@@ -31,19 +36,30 @@ class OrderController extends Controller
                     $orderData->get('total'),
                     $orderData->get('currency'),
                 )
-            )
-        );
+            );
+
+            DB::commit();
+
+            return response()->json($paymentCreateResponse);
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
-    public function getById(int $id): JsonResponse
+    public function getByPaymentRequestId(int $paymentRequestId): JsonResponse
     {
-        $order = $this->orderService->getById($id);
+        $paymentRequest = $this->paymentRequestService->getByPaymentRequestId($paymentRequestId);
+        $order = $this->orderService->getById($paymentRequest->orderId);
 
-        if (is_null($order)) {
-            throw new NotFoundHttpException();
+        if (!is_null($order)) {
+            return response()->json(
+                new OrderRequestEntity(
+                    $order->customerName, $order->customerEmail, $order->customerMobile, $paymentRequest->description,
+                    $paymentRequest->total, $paymentRequest->currency, $order->status
+                )
+            );
         }
-
-        return response()->json($order);
     }
 
     public function getAll(): JsonResponse

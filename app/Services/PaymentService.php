@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Entities\Order\OrderRequestEntity;
 use App\Entities\Payment\PaymentAmountEntity;
 use App\Entities\Payment\PaymentAuthEntity;
+use App\Entities\Payment\PaymentCreatedEntity;
+use App\Entities\Payment\PaymentCreatedStatusEntity;
 use App\Entities\Payment\PaymentEntity;
 use App\Entities\Payment\PaymentPayerEntity;
-use App\Entities\Payment\PaymentRequestEntity;
-use App\Entities\Payment\PaymentResponseEntity;
+use App\Entities\Payment\PaymentCreateRequestEntity;
+use App\Entities\Payment\PaymentCreateResponseEntity;
 use App\Services\Contracts\IPaymentService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -16,11 +18,11 @@ use Illuminate\Support\Str;
 
 class PaymentService implements IPaymentService
 {
-    public function createRequest(PaymentRequestEntity $paymentRequestEntity): PaymentResponseEntity|null
+    public function createRequest(PaymentCreateRequestEntity $paymentRequestEntity): PaymentCreateResponseEntity|null
     {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json'
-        ])->post('https://dev.placetopay.com/redirection/api/session', [
+        ])->post(env('PLACETOPLAY_API') . "/api/session", [
             "locale" => $paymentRequestEntity->locale,
             "auth" => [
                 "login" => $paymentRequestEntity->auth->login,
@@ -56,7 +58,7 @@ class PaymentService implements IPaymentService
 
         if ($responseData) {
             if (isset($responseData['requestId']) && isset($responseData['processUrl'])) {
-                return new PaymentResponseEntity($responseData['requestId'], $responseData['processUrl']);
+                return new PaymentCreateResponseEntity($responseData['requestId'], $responseData['processUrl']);
             }
         }
 
@@ -64,21 +66,14 @@ class PaymentService implements IPaymentService
     }
 
     public function buildPaymentRequest(
-        int $orderId, OrderRequestEntity $orderRequestEntity): PaymentRequestEntity|null
+        int $orderId, OrderRequestEntity $orderRequestEntity, int $paymentRequestId): PaymentCreateRequestEntity|null
     {
-        $paymentRequest = new PaymentRequestEntity();
+        $paymentRequest = new PaymentCreateRequestEntity();
         $paymentRequest->locale = 'es_CO';
 
         $nonce = (string)Str::uuid();
         $seed = Carbon::now()->toW3cString();
-        $paymentRequest->auth = new PaymentAuthEntity(
-            env('PLACETOPLAY_LOGIN'),
-            base64_encode(
-                sha1($nonce . $seed . env('PLACETOPLAY_SECRETKEY'), true)
-            ),
-            base64_encode($nonce),
-            $seed
-        );
+        $paymentRequest->auth = $this->buildPaymentAuthRequest($nonce, $seed);
 
         $paymentRequest->payer = new PaymentPayerEntity(
             $orderRequestEntity->customerName,
@@ -93,10 +88,61 @@ class PaymentService implements IPaymentService
         );
 
         $paymentRequest->expiration = Carbon::now()->addMinutes(20)->toW3cString();
-        $paymentRequest->returnUrl = 'http://localhost/api/v1';
+        $paymentRequest->returnUrl = env('PLACETOPLAY_RETURNURL') . '/' . $paymentRequestId;
         $paymentRequest->ipAddress = '127.0.0.1';
         $paymentRequest->userAgent = $_SERVER['HTTP_USER_AGENT'];
 
         return $paymentRequest;
+    }
+
+    private function buildPaymentAuthRequest(string $nonce, string $seed): PaymentAuthEntity|null
+    {
+        return new PaymentAuthEntity(
+            env('PLACETOPLAY_LOGIN'),
+            base64_encode(
+                sha1($nonce . $seed . env('PLACETOPLAY_SECRETKEY'), true)
+            ),
+            base64_encode($nonce),
+            $seed
+        );
+    }
+
+    public function getByRequestPaymentId(int $requestPaymentId): PaymentCreatedEntity|null
+    {
+        $nonce = (string)Str::uuid();
+        $seed = Carbon::now()->toW3cString();
+        $paymentAuthRequest = $this->buildPaymentAuthRequest($nonce, $seed);
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json'
+        ])->post(env('PLACETOPLAY_API') . "/api/session/" . $requestPaymentId, [
+            "login" => $paymentAuthRequest->login,
+            "tranKey" => $paymentAuthRequest->tranKey,
+            "nonce" => $paymentAuthRequest->nonce,
+            "seed" => $paymentAuthRequest->seed
+        ]);
+
+        if (!$response->successful()) {
+            $errorData = $response->json();
+
+            throw new \Exception(
+                'Error en el pago. ' .
+                $errorData['status']['message'] ??
+                'No se pudo obtener la información del pago, por favor intente nuevamente.'
+            );
+        }
+
+        $responseData = $response->json();
+
+        if ($responseData) {
+            if (isset($responseData['requestId']) && isset($responseData['status']['status'])) {
+                return new PaymentCreatedEntity(
+                    $responseData['requestId'],
+                    new PaymentCreatedStatusEntity($responseData['status']['status'])
+                );
+            }
+        }
+
+        return null;
     }
 }

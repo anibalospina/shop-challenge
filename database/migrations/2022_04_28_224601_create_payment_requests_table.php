@@ -16,9 +16,10 @@ return new class extends Migration {
         Schema::create('payment_requests', function (Blueprint $table) {
             $table->id();
             $table->text('description');
+            $table->string('currency');
             $table->float('total');
-            $table->text('request_id');
-            $table->text('process_url');
+            $table->text('request_id')->nullable();
+            $table->text('process_url')->nullable();
             $table->foreignIdFor(Order::class);
             $table->dateTime('created_at');
         });
