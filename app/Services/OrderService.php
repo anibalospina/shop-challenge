@@ -15,6 +15,11 @@ class OrderService implements IOrderService
     private IOrderRepository $orderRepository;
     private IPaymentService $paymentService;
     private IPaymentRequestService $paymentRequestService;
+    const STATUS_PLATFORM_PAY = [
+        'APPROVED' => 'PAYED',
+        'REJECTED' => 'REJECTED',
+        'PENDING' => 'CREATED'
+    ];
 
     public function __construct(
         IOrderRepository       $orderRepository,
@@ -70,5 +75,21 @@ class OrderService implements IOrderService
     public function getAll(): array
     {
         return $this->orderRepository->getAll();
+    }
+
+    public function updateStatus(int $id, string $status): void
+    {
+        if (isset(self::STATUS_PLATFORM_PAY[$status])) {
+            $this->orderRepository->updateStatus($id, $this->getPlatformStatusPay(self::STATUS_PLATFORM_PAY[$status]));
+        }
+    }
+
+    public function getPlatformStatusPay(string $status): string|null
+    {
+        if (isset(self::STATUS_PLATFORM_PAY[$status])) {
+            return self::STATUS_PLATFORM_PAY[$status];
+        }
+
+        return null;
     }
 }

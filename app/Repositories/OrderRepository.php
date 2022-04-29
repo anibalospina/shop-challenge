@@ -31,4 +31,13 @@ class OrderRepository implements IOrderRepository
     {
         return Order::all()->toArray();
     }
+
+    public function updateStatus(int $id, string $status): void
+    {
+        $order = Order::findOrFail($id);
+
+        $order->status = $status;
+
+        $order->save();
+    }
 }

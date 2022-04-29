@@ -13,4 +13,6 @@ interface IOrderRepository
     public function getById(int $id): array|null;
 
     public function getAll(): array;
+
+    public function updateStatus(int $id, string $status): void;
 }

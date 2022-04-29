@@ -13,4 +13,8 @@ interface IOrderService
     public function getById(int $id): OrderEntity|null;
 
     public function getAll(): array;
+
+    public function updateStatus(int $id, string $status): void;
+
+    public function getPlatformStatusPay(string $status): string|null;
 }

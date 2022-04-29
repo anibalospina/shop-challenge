@@ -116,10 +116,12 @@ class PaymentService implements IPaymentService
         $response = Http::withHeaders([
             'Content-Type' => 'application/json'
         ])->post(env('PLACETOPLAY_API') . "/api/session/" . $requestPaymentId, [
-            "login" => $paymentAuthRequest->login,
-            "tranKey" => $paymentAuthRequest->tranKey,
-            "nonce" => $paymentAuthRequest->nonce,
-            "seed" => $paymentAuthRequest->seed
+            "auth" => [
+                "login" => $paymentAuthRequest->login,
+                "tranKey" => $paymentAuthRequest->tranKey,
+                "nonce" => $paymentAuthRequest->nonce,
+                "seed" => $paymentAuthRequest->seed
+            ]
         ]);
 
         if (!$response->successful()) {
