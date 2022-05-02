@@ -29,7 +29,7 @@ class OrderRepository implements IOrderRepository
 
     public function getAll(): array
     {
-        return Order::all()->toArray();
+        return Order::paginate(5)->toArray();
     }
 
     public function updateStatus(int $id, string $status): void

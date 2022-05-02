@@ -8,6 +8,7 @@ use App\Services\Contracts\IOrderService;
 use App\Services\Contracts\IPaymentRequestService;
 use App\Services\Contracts\IPaymentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -63,14 +64,12 @@ class OrderController extends Controller
             $order->status = $platformStatusPay;
         }
 
-        if (!is_null($order)) {
-            return response()->json(
-                new OrderRequestEntity(
-                    $order->customerName, $order->customerEmail, $order->customerMobile, $paymentRequest->description,
-                    $paymentRequest->total, $paymentRequest->processUrl, $paymentRequest->currency, $order->status
-                )
-            );
-        }
+        return response()->json(
+            new OrderRequestEntity(
+                $order->customerName, $order->customerEmail, $order->customerMobile, $paymentRequest->description,
+                $paymentRequest->total, $paymentRequest->processUrl, $paymentRequest->currency, $order->status
+            )
+        );
     }
 
     public function getAll(): JsonResponse
